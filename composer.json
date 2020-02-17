@@ -1,7 +1,7 @@
 {
     "name": "hostarium/libcpmove",
     "description": "A library for parsing information from a cPanel cpmove file",
-    "version": "0.1",
+    "version": "0.2",
     "type": "library",
     "require": {
         "splitbrain/php-archive": "^1.1",
