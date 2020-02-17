@@ -19,9 +19,9 @@ To use simply create a new `Hostarium\CPMove` object, providing the path to your
 Functions
 ---------
 
-All functions, including the constructor, throw `HostariumException` on failure.
+All functions, including the constructor, throw `Hostarium\HostariumException` on failure.
 
-`getDomains(bool $mainOnly = false)`
+`getDomains(bool $mainOnly = false)`  
 getDomains() will return either an array containing the following keys:
 - Main Domain (main_domain)
 - Addon Domains (addon_domains)
@@ -30,13 +30,17 @@ getDomains() will return either an array containing the following keys:
 
 or a string of the main domain if $mainOnly is set to true
 
-`getSQLDatabases()`
+`getSQLDatabases()`  
 getSQLDatabases() will return an array of mySQL databases, or an empty array 
 if no databases are found in the archive
 
-`getHomePath()`
+`getHomePath()`  
 getHomePath() will return a string containing the absolute path to the account's
 home directory, minus a trailing slash
+
+`getMailboxes()`  
+getMailboxes() will return an array of mailboxes, or an empty array 
+if no mailboxes are found in the archive
 
 License
 -------

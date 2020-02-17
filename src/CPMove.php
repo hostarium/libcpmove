@@ -19,6 +19,7 @@ class CPMove
     protected $archive;
     protected $fs;
     protected $dir;
+    protected $file;
 
     /**
      * @throws HostariumException on failure
@@ -31,21 +32,9 @@ class CPMove
             throw new HostariumException("File extension must be .tar.gz");    
         }
 
+        $this->file = $file;
         $this->archive = new Tar();
-
-        // Attempt to open the file and throw an exception if it's not a tar
-        try
-        {
-            $this->archive->open($file);
-        }
-        catch(ArchiveIllegalCompressionException $e)
-        {
-            throw new HostariumException("Invalid cpmove file");
-        }
-        catch(ArchiveIOException $e)
-        {
-            throw new HostariumException("Unable to access cpmove file");         
-        }
+        $this->openArchive($this->file);
 
         // Create the temporary file system and attempt to mount it
         $this->fs = FileSystem::factory('vfs://');
@@ -64,6 +53,23 @@ class CPMove
 
         // We need the dir with the .tar.gz stripped out for reading the files later
         $this->dir = str_replace('.tar', '', pathinfo($file)['filename']);
+    }
+
+    private function openArchive($file)
+    {
+        // Attempt to open the file and throw an exception if it's not a tar
+        try
+        {
+            $this->archive->open($file);
+        }
+        catch(ArchiveIllegalCompressionException $e)
+        {
+            throw new HostariumException("Invalid cpmove file");
+        }
+        catch(ArchiveIOException $e)
+        {
+            throw new HostariumException("Unable to access cpmove file");         
+        }
     }
 
     /**
@@ -171,5 +177,62 @@ class CPMove
         $this->fs->get('/')->remove('homedir');
 
         return trim($path->getContent());
+    }
+
+    /**
+     * Return an array of mailboxes associated with the cpmove file
+     *
+     * @throws HostariumException on failure
+     *
+     * @return array Array of mailboxes
+     **/
+    public function getMailboxes()
+    {
+        $domain = $this->getDomains(true);
+        
+        $this->openArchive($this->file);
+        
+        $path   = $this->getHomePath();
+
+        $this->openArchive($this->file);
+
+        try
+        {
+            $this->archive->extract('vfs://etc', '', '', '/homedir\/etc/');
+        }
+        catch(ArchiveIOException $e)
+        {
+            throw new HostariumException("Unable to access cpmove file");
+        }
+        catch(ArchiveCorruptedException $e)
+        {
+            throw new HostariumException("cpmove file is corrupted");
+        }
+
+        // If getting returns null, it means the file is missing.
+        if($this->fs->get('etc/' . $this->dir . '/homedir/etc/' . $domain . '/passwd') === null)
+        {
+            throw new Hostarium\HostariumException("Failed to get email file");
+        }
+
+        $mailboxes = [];
+
+        $fileContents = trim($this->fs->get('etc/' . $this->dir . '/homedir/etc/' . $domain . '/passwd')->getContent());
+
+        // If the passwd file is empty there's no emails, so return an empty array
+        if(empty($fileContents))
+        {
+            return [];
+        }
+        foreach(explode(PHP_EOL, $fileContents) as $m)
+        {
+            $parts = explode(':', $m);
+
+            $path = explode('/', $parts[5]);
+
+            $mailboxes[] = end($path) . '@' . $domain;
+        }
+
+        return $mailboxes;
     }
 }
