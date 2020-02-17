@@ -1,0 +1,22 @@
+{
+    "name": "hostarium/libcpmove",
+    "description": "A library for parsing information from a cPanel cpmove file",
+    "version": "0.1",
+    "type": "library",
+    "require": {
+        "splitbrain/php-archive": "^1.1",
+        "adlawson/vfs": "^0.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "Hostarium\\":"src/"
+        }
+    },
+    "license": "MPL-2.0",
+    "authors": [
+        {
+            "name": "Bruce Taylor",
+            "email": "bruce@hostarium.com"
+        }
+    ]
+}
