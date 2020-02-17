@@ -212,7 +212,8 @@ class CPMove
         // If getting returns null, it means the file is missing.
         if($this->fs->get('etc/' . $this->dir . '/homedir/etc/' . $domain . '/passwd') === null)
         {
-            throw new Hostarium\HostariumException("Failed to get email file");
+            // But in this case that means no emails have ever been added
+            return [];
         }
 
         $mailboxes = [];
